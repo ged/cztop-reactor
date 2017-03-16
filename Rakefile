@@ -33,6 +33,7 @@ hoespec = Hoe.spec 'cztop-reactor' do |spec|
 
 	spec.dependency 'loggability', '~> 0.14'
 	spec.dependency 'cztop', '~> 0.11'
+	spec.dependency 'timers', '~> 4.1'
 
 	spec.dependency 'hoe-deveiate',            '~> 0.9', :developer
 	spec.dependency 'simplecov',               '~> 0.13', :developer
@@ -88,7 +89,7 @@ task GEMSPEC do |task|
 	spec.files.delete( '.gemtest' )
 	spec.signing_key = nil
 	spec.cert_chain = ['certs/ged.pem']
-	spec.version = "#{spec.version.bump}.pre#{Time.now.strftime("%Y%m%d%H%M%S")}"
+	spec.version = "#{spec.version.bump}.0.pre#{Time.now.strftime("%Y%m%d%H%M%S")}"
 	File.open( task.name, 'w' ) do |fh|
 		fh.write( spec.to_ruby )
 	end
