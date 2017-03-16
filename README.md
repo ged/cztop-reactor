@@ -22,17 +22,17 @@ conditions on a ZMQ socket or a timer expiring.
 
 A simple example:
 
-		# Start a SERVER socket, and print out any messages sent to it
+    # Start a SERVER socket, and print out any messages sent to it
     reactor = CZTop::Reactor.new
-		socket = CZTop::Socket::SERVER.new
-		socket.bind( 'tcp://0.0.0.0:8' )
-		reactor.register( socket, :read ) do |event|
-			if event.readable?
-				message = event.socket.receive
-				puts "Read: %p" % [ message.to_a ]
-			end
-		end
-		reactor.start_polling
+    socket = CZTop::Socket::SERVER.new
+    socket.bind( 'tcp://0.0.0.0:8' )
+    reactor.register( socket, :read ) do |event|
+      if event.readable?
+        message = event.socket.receive
+        puts "Read: %p" % [ message.to_a ]
+      end
+    end
+    reactor.start_polling
 
 
 ## Prerequisites
