@@ -4,7 +4,7 @@ home
 : http://deveiate.org/projects/CZTop-Reactor
 
 code
-: http://bitbucket.org/ged/CZTop-Reactor
+: http://bitbucket.org/ged/cztop-reactor
 
 github
 : https://github.com/ged/cztop-reactor
