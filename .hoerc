@@ -1,0 +1,2 @@
+--- 
+exclude: !ruby/regexp /\.(editorconfig|hg|gems|hoerc|pryrc|ruby-\w*)|Gemfile|\.gemspec$|certs\//
