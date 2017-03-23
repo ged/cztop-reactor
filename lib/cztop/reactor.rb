@@ -100,7 +100,12 @@ class CZTop::Reactor
 	### event/handler+arguments pairs associated with the handle.
 	###
 	def register( socket, *events, &handler )
-		raise LocalJumpError, "no handler given" unless handler
+		if !events.empty? && !events.last.is_a?( Symbol )
+			handler_obj = events.pop
+			handler = handler_obj.method( :handle_io_event )
+		end
+
+		raise LocalJumpError, "no block or handler given" unless handler
 
 		self.unregister( socket )
 
@@ -235,6 +240,11 @@ class CZTop::Reactor
 	### registered with the reactor for the `:read` event with the specified +callback+,
 	### then returned.
 	def register_monitor( socket, *events, &callback )
+		if !events.empty? && !events.last.is_a?( String )
+			handler = events.pop
+			callback = handler.method( :handle_monitor_event )
+		end
+
 		events.push( 'ALL' ) if events.empty?
 
 		monitor = CZTop::Monitor.new( socket )
@@ -253,33 +263,37 @@ class CZTop::Reactor
 	# Polling
 	#
 
-	### Poll the sockets registered to the reactor for pending events.
+	### Poll registered sockets and fire timers until they're all unregistered.
 	def start_polling
-		until self.empty?
-			self.log.debug "Polling %d sockets" % [ self.sockets.length ]
+		self.poll_once until self.empty?
+	end
 
-			wait_interval = self.timers.wait_interval || DEFAULT_POLL_INTERVAL
 
-			# If there's a timer already due to fire, don't wait at all
-			event = if wait_interval > 0
-					self.log.debug "Waiting for IO for %fms" % [ wait_interval * 1000 ]
-					self.wait( wait_interval * 1000 )
-				else
-					nil
-				end
+	### Poll registered sockets or fire timers and return.
+	def poll_once
+		self.log.debug "Polling %d sockets" % [ self.sockets.length ]
 
-			self.log.debug "Got event %p" % [ event ]
-			if event
-				# self.log.debug "Got event: %p" % [ event ]
-				handler = self.sockets[ event.socket ][ :handler ]
-				handler.call( event ) if handler
+		wait_interval = self.timers.wait_interval || DEFAULT_POLL_INTERVAL
+
+		# If there's a timer already due to fire, don't wait at all
+		event = if wait_interval > 0
+				self.log.debug "Waiting for IO for %fms" % [ wait_interval * 1000 ]
+				self.wait( wait_interval * 1000 )
 			else
-				self.log.debug "Expired: firing timers."
-				self.timers.fire
+				nil
 			end
 
-			self.log.debug "%d sockets after polling: %p" % [ self.sockets.length, self.sockets ]
+		self.log.debug "Got event %p" % [ event ]
+		if event
+			# self.log.debug "Got event: %p" % [ event ]
+			handler = self.sockets[ event.socket ][ :handler ]
+			handler.call( event )
+		else
+			self.log.debug "Expired: firing timers."
+			self.timers.fire
 		end
+
+		self.log.debug "%d sockets after polling: %p" % [ self.sockets.length, self.sockets ]
 	end
 
 

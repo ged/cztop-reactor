@@ -9,6 +9,13 @@ require 'cztop/reactor'
 describe CZTop::Reactor do
 
 	let( :reactor ) { described_class.new }
+	let( :handler_class ) do
+		Class.new do
+			def handle_io_event(ev); end
+			def handle_monitor_event(ev); end
+		end
+	end
+	let( :handler_object ) { handler_class.new }
 
 
 	describe "socket registration" do
@@ -42,10 +49,22 @@ describe CZTop::Reactor do
 		end
 
 
-		it "errors if no block is given when registering a socket" do
+		it "allows a socket to be registered with a handler object instead of a block" do
+			expect( reactor ).to_not be_registered( socket )
+			expect( reactor ).to_not have_event_enabled( socket, :read )
+			expect( reactor ).to_not have_event_enabled( socket, :write )
+
+			reactor.register( socket, :read, :write, handler_object )
+
+			expect( reactor ).to be_registered( socket )
+			expect( reactor ).to have_event_enabled( socket, :read )
+			expect( reactor ).to have_event_enabled( socket, :write )
+		end
+
+		it "errors if no block or handler object is given when registering a socket" do
 			expect {
 				reactor.register( socket, :read )
-			}.to raise_error( LocalJumpError, /no handler/i )
+			}.to raise_error( LocalJumpError, /no block or handler/i )
 		end
 
 
@@ -107,6 +126,64 @@ describe CZTop::Reactor do
 	end
 
 
+	describe "handler registration" do
+
+		let( :reader ) do
+			sock = CZTop::Socket::PAIR.new( '@inproc://callback-test' )
+			sock.options.linger = 0
+			sock
+		end
+		let( :writer ) do
+			sock = CZTop::Socket::PAIR.new( '>inproc://callback-test' )
+			sock.options.linger = 0
+			sock
+		end
+
+		after( :each ) do
+			reader.close
+			writer.close
+		end
+
+
+		it "calls a callback when a registered socket becomes readable" do
+			callback_called = false
+			data = nil
+
+			reactor.register( reader, :read ) do |event|
+				expect( event ).to be_a( CZTop::Reactor::Event )
+				expect( event ).to be_readable
+				expect( event ).to_not be_writable
+				expect( event.socket ).to equal( reader )
+
+				event.socket.receive
+				callback_called = true
+			end
+
+			writer << "stuff"
+
+			reactor.poll_once
+
+			expect( callback_called ).to be_truthy
+		end
+
+
+		it "calls #handle_io_event on a handler object when a socket becomes readable" do
+			handler_object = Object.new
+			expect( handler_object ).to receive( :handle_io_event ) do |event|
+				expect( event ).to be_a( CZTop::Reactor::Event )
+				expect( event ).to be_readable
+				expect( event ).to_not be_writable
+				expect( event.socket ).to equal( reader )
+			end
+
+			reactor.register( reader, :read, handler_object )
+			writer << "stuff"
+			reactor.poll_once
+		end
+
+	end
+
+
 	describe "timer registration" do
 
 		it "allows a callback to be called after a certain amount of time" do
@@ -141,6 +218,26 @@ describe CZTop::Reactor do
 			ensure
 				monitor.terminate if monitor
 			end
+		end
+
+
+		it "can create and register a monitor with a handler object instead of a block" do
+			socket = CZTop::Socket::REP.new
+			begin
+				monitor = reactor.register_monitor( socket, handler_object ) {}
+				expect( monitor ).to be_a( CZTop::Monitor )
+				expect( reactor ).to be_registered( monitor.actor )
+			ensure
+				monitor.terminate if monitor
+			end
+		end
+
+
+		it "raises an error when registering a monitor with no callback or handler object" do
+			socket = CZTop::Socket::REP.new
+			expect {
+				reactor.register_monitor( socket )
+			}.to raise_error( LocalJumpError, /no block or handler/i )
 		end
 
 	end
