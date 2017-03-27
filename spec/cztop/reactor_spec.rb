@@ -273,6 +273,41 @@ describe CZTop::Reactor do
 		end
 
 
+		it "doesn't trap interrupts by default" do
+			expect( CZTop::Poller::ZMQ ).to receive( :poller_wait ).
+				and_raise( Interrupt.new )
+
+			expect {
+				reactor.poll_once
+			}.to raise_error( Interrupt )
+		end
+
+
+		it "has an option to ignore interrupts if you're doing your own signal-handling'" do
+			expect( CZTop::Poller::ZMQ ).to receive( :poller_wait ).
+				and_raise( Interrupt.new )
+
+			expect( reactor.poll_once(ignore_interrupts: true) ).to be_nil
+		end
+
+
+		it "ignores EAGAIN/EWOULDBLOCK by default" do
+			expect( CZTop::Poller::ZMQ ).to receive( :poller_wait ).
+				and_raise( Errno::EWOULDBLOCK.new )
+
+			expect( reactor.poll_once ).to be_nil
+		end
+
+
+		it "has an option to propagate EGAIN/EWOULDBLOCK" do
+			expect( CZTop::Poller::ZMQ ).to receive( :poller_wait ).
+				and_raise( Errno::EAGAIN.new )
+
+			expect {
+				reactor.poll_once( ignore_eagain: false )
+			}.to raise_error( Errno::EAGAIN )
+		end
+
 	end
 
 

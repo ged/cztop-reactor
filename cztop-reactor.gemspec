@@ -1,15 +1,15 @@
 # -*- encoding: utf-8 -*-
-# stub: cztop-reactor 0.1.0.pre20170322183420 ruby lib
+# stub: cztop-reactor 0.1.0.pre20170323172345 ruby lib
 
 Gem::Specification.new do |s|
   s.name = "cztop-reactor".freeze
-  s.version = "0.1.0.pre20170322183420"
+  s.version = "0.1.0.pre20170323172345"
 
   s.required_rubygems_version = Gem::Requirement.new("> 1.3.1".freeze) if s.respond_to? :required_rubygems_version=
   s.require_paths = ["lib".freeze]
   s.authors = ["Michael Granger".freeze]
   s.cert_chain = ["certs/ged.pem".freeze]
-  s.date = "2017-03-23"
+  s.date = "2017-03-24"
   s.description = "This is an implementation of the Reactor pattern described in [Pattern-Oriented\nSoftware Architecture (Volume 2)][POSA2]. It allows an asynchronous application\nto be described as one or more \"reactions\" to events, in this case either I/O\nconditions on a ZMQ socket or a timer expiring.\n\nA simple example:\n\n    # Start a SERVER socket, and print out any messages sent to it\n    reactor = CZTop::Reactor.new\n    socket = CZTop::Socket::SERVER.new\n    socket.bind( 'tcp://0.0.0.0:8' )\n    reactor.register( socket, :read ) do |event|\n      if event.readable?\n        message = event.socket.receive\n        puts \"Read: %p\" % [ message.to_a ]\n      end\n    end\n    reactor.start_polling".freeze
   s.email = ["ged@FaerieMUD.org".freeze]
   s.extra_rdoc_files = ["History.md".freeze, "LICENSE.txt".freeze, "Manifest.txt".freeze, "README.md".freeze, "History.md".freeze, "README.md".freeze]

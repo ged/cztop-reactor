@@ -264,13 +264,13 @@ class CZTop::Reactor
 	#
 
 	### Poll registered sockets and fire timers until they're all unregistered.
-	def start_polling
-		self.poll_once until self.empty?
+	def start_polling( **opts )
+		self.poll_once( **opts ) until self.empty?
 	end
 
 
 	### Poll registered sockets or fire timers and return.
-	def poll_once
+	def poll_once( ignore_interrupts: false, ignore_eagain: true )
 		self.log.debug "Polling %d sockets" % [ self.sockets.length ]
 
 		wait_interval = self.timers.wait_interval || DEFAULT_POLL_INTERVAL
@@ -294,6 +294,14 @@ class CZTop::Reactor
 		end
 
 		self.log.debug "%d sockets after polling: %p" % [ self.sockets.length, self.sockets ]
+	rescue Interrupt
+		raise unless ignore_interrupts
+		self.log.debug "Interrupted."
+		return nil
+	rescue Errno::EAGAIN, Errno::EWOULDBLOCK
+		raise unless ignore_eagain
+		self.log.debug "EAGAIN"
+		return nil
 	end
 
 
