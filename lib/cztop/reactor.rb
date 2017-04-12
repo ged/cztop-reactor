@@ -22,7 +22,7 @@ class CZTop::Reactor
 	extend Loggability
 
 	# The version of this library
-	VERSION = '0.0.1'
+	VERSION = '0.1.0'
 
 	# The maximum number of seconds to wait for events when there are no timers
 	# registered.
