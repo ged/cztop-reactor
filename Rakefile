@@ -14,7 +14,6 @@ Hoe.plugin :signing
 Hoe.plugin :deveiate
 
 Hoe.plugins.delete :rubyforge
-Hoe.plugins.delete :gemcutter # Remove for public gems
 
 hoespec = Hoe.spec 'cztop-reactor' do |spec|
 	self.readme_file = 'README.md'
