@@ -231,6 +231,12 @@ class CZTop::Reactor
 	end
 
 
+	### Restore the specified +timer+ to the reactor.
+	def resume_timer( timer )
+		timer.reset
+	end
+
+
 	#
 	# Monitors
 	#

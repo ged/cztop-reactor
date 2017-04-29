@@ -204,6 +204,14 @@ describe CZTop::Reactor do
 			expect( reactor.timers ).to_not include( handle )
 		end
 
+
+		it "allows a timer to be resumed" do
+			handle = reactor.add_periodic_timer( 5 ) {}
+			reactor.remove_timer( handle )
+			reactor.resume_timer( handle )
+			expect( reactor.timers ).to include( handle )
+		end
+
 	end
 
 
