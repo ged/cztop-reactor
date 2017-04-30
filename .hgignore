@@ -2,3 +2,4 @@
 ^ChangeLog$
 doc/
 .gem$
+pkg/
