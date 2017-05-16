@@ -1,5 +1,5 @@
-/html/
-^ChangeLog$
-doc/
 .gem$
+coverage/
+doc/
 pkg/
+^ChangeLog$

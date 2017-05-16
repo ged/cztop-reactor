@@ -9,6 +9,8 @@ README.md
 Rakefile
 lib/cztop/reactor.rb
 lib/cztop/reactor/event.rb
+lib/cztop/reactor/signal_handling.rb
 spec/cztop/reactor/event_spec.rb
+spec/cztop/reactor/signal_handling_spec.rb
 spec/cztop/reactor_spec.rb
 spec/spec_helper.rb
