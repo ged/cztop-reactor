@@ -54,6 +54,7 @@ task 'hg:precheckin' => [ :check_history, :check_manifest, :gemspec, :spec ]
 task :test => :spec
 
 # Rebuild the ChangeLog immediately before release
+file 'ChangeLog'
 task :prerelease => 'ChangeLog'
 CLOBBER.include( 'ChangeLog' )
 
@@ -81,8 +82,10 @@ if File.directory?( '.hg' )
 	end
 end
 
+file 'Manifest.txt'
+
 task :gemspec => GEMSPEC
-file GEMSPEC => __FILE__
+file GEMSPEC => [ 'Manifest.txt', 'ChangeLog', __FILE__ ]
 task GEMSPEC do |task|
 	spec = $hoespec.spec
 	spec.files.delete( '.gemtest' )
