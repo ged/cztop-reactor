@@ -14,7 +14,7 @@ require 'cztop/reactor' unless defined?( CZTop::Reactor )
 #     require 'cztop/reactor/signal_handling'
 #
 #     class MyDaemon
-#         include 'cztop/reactor/signal_handling'
+#         include CZTop::Reactor::SignalHandling
 #
 #         def start
 #             @reactor = CZTop::Reactor.new
@@ -133,7 +133,7 @@ module CZTop::Reactor::SignalHandling
 
 	### Set up signal traps for the specified +signals+.
 	def set_signal_traps( *signals )
-		self.log.debug "Setting up deferred signal handlers."
+		self.log.debug "Setting up deferred signal handlers for signals: %p." % [ signals ]
 		signals.each do |sig|
 			Signal.trap( sig ) do
 				Thread.main[ SIGNAL_QUEUE_KEY ] << sig
