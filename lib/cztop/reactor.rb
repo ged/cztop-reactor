@@ -291,8 +291,10 @@ class CZTop::Reactor
 
 		self.log.debug "Got event %p" % [ event ]
 		if event
-			# self.log.debug "Got event: %p" % [ event ]
-			handler = self.sockets[ event.socket ][ :handler ]
+			sock = event.socket or
+				raise "No socket for event %p!?" % [ event ]
+			handler = self.sockets[ event.socket ][ :handler ] or
+				raise "No handler registered for %p" % [ event.socket ]
 			handler.call( event )
 		else
 			self.log.debug "Expired: firing timers."
