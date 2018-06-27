@@ -1,3 +1,11 @@
+## v0.4.0 [2018-06-27] Michael Granger <ged@FaerieMUD.org>
+
+Enhancements:
+
+- Make the reactor threadsafe
+- Guard against events with no sockets
+
+
 ##  v0.3.0 [2017-05-15] Michael Granger <ged@FaerieMUD.org>
 
 Enhancements:
