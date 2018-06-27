@@ -4,6 +4,7 @@
 require 'loggability'
 require 'timers'
 require 'ffi'
+require 'monitor'
 
 require 'cztop'
 require 'cztop/poller'
@@ -20,6 +21,7 @@ require 'cztop/has_ffi_delegate'
 #
 class CZTop::Reactor
 	extend Loggability
+	include MonitorMixin
 
 	# The version of this library
 	VERSION = '0.3.0'
@@ -63,6 +65,8 @@ class CZTop::Reactor
 			CZTop::Poller::ZMQ.poller_destroy( ptr_ptr )
 		})
 		@event_ptr = ::FFI::MemoryPointer.new( CZTop::Poller::ZMQ::PollerEvent )
+
+		super
 	end
 
 
@@ -107,18 +111,20 @@ class CZTop::Reactor
 
 		raise LocalJumpError, "no block or handler given" unless handler
 
-		self.unregister( socket )
+		self.synchronize do
+			self.unregister( socket )
 
-		ptr = self.ptr_for_socket( socket )
-		rc = CZTop::Poller::ZMQ.poller_add( @poller_ptr, ptr, nil, 0 )
-		self.log.debug "poller_add: rc = %p" % [ rc ]
-		CZTop::HasFFIDelegate.raise_zmq_err if rc == -1
+			ptr = self.ptr_for_socket( socket )
+			rc = CZTop::Poller::ZMQ.poller_add( @poller_ptr, ptr, nil, 0 )
+			self.log.debug "poller_add: rc = %p" % [ rc ]
+			CZTop::HasFFIDelegate.raise_zmq_err if rc == -1
 
-		self.log.info "Registered: %p with handler: %p" % [ socket, handler ]
-		self.sockets[ socket ][ :handler ] = handler
-		self.enable_events( socket, *events )
+			self.log.info "Registered: %p with handler: %p" % [ socket, handler ]
+			self.sockets[ socket ][ :handler ] = handler
+			self.enable_events( socket, *events )
 
-		@socket_pointers[ ptr.to_i ] = socket
+			@socket_pointers[ ptr.to_i ] = socket
+		end
 	end
 	alias_method :add, :register
 	alias_method :register_socket, :register
@@ -128,15 +134,17 @@ class CZTop::Reactor
 	### handles, if present. Returns the handle if it was registered, or
 	### <tt>nil</tt> if it was not.
 	def unregister( socket )
-		if self.sockets.delete( socket )
-			self.log.info "Unregistering: %p" % [ socket ]
-			ptr = self.ptr_for_socket( socket )
-			rc = CZTop::Poller::ZMQ.poller_remove( @poller_ptr, ptr )
-			self.log.debug "poller_remove: rc = %p" % [ rc ]
-			CZTop::HasFFIDelegate.raise_zmq_err if rc == -1
-		end
+		self.synchronize do
+			if self.sockets.delete( socket )
+				self.log.info "Unregistering: %p" % [ socket ]
+				ptr = self.ptr_for_socket( socket )
+				rc = CZTop::Poller::ZMQ.poller_remove( @poller_ptr, ptr )
+				self.log.debug "poller_remove: rc = %p" % [ rc ]
+				CZTop::HasFFIDelegate.raise_zmq_err if rc == -1
+			end
 
-		@socket_pointers.delete( ptr.to_i )
+			@socket_pointers.delete( ptr.to_i )
+		end
 	end
 	alias_method :remove, :unregister
 	alias_method :unregister_socket, :unregister
@@ -156,12 +164,14 @@ class CZTop::Reactor
 			raise ArgumentError, "invalid events: %p" % [ invalid ]
 		end
 
-		socket = self.socket_for_ptr( socket ) if socket.is_a?( FFI::Pointer )
-		raise ArgumentError, "%p is not registered yet" % [ socket ] unless
-			self.registered?( socket )
+		self.synchronize do
+			socket = self.socket_for_ptr( socket ) if socket.is_a?( FFI::Pointer )
+			raise ArgumentError, "%p is not registered yet" % [ socket ] unless
+				self.registered?( socket )
 
-		self.sockets[ socket ][ :events ] |= events
-		self.update_poller_for( socket )
+			self.sockets[ socket ][ :events ] |= events
+			self.update_poller_for( socket )
+		end
 	end
 	alias_method :enable_event, :enable_events
 	alias_method :enable_socket_events, :enable_events
@@ -171,9 +181,11 @@ class CZTop::Reactor
 	### Remove the specified +events+ from the list that will be polled for on
 	### the given +socket+ handle.
 	def disable_events( socket, *events )
-		socket = self.socket_for_ptr( socket ) if socket.is_a?( FFI::Pointer )
-		self.sockets[ socket ][:events] -= events
-		self.update_poller_for( socket )
+		self.synchronize do
+			socket = self.socket_for_ptr( socket ) if socket.is_a?( FFI::Pointer )
+			self.sockets[ socket ][:events] -= events
+			self.update_poller_for( socket )
+		end
 	end
 	alias_method :disable_socket_events, :disable_events
 
@@ -197,9 +209,11 @@ class CZTop::Reactor
 
 	### Clear all registered sockets and returns the sockets that were cleared.
 	def clear
-		sockets = self.sockets.keys
-		sockets.each {|sock| self.unregister(sock) }
-		return sockets
+		self.synchronize do
+			sockets = self.sockets.keys
+			sockets.each {|sock| self.unregister(sock) }
+			return sockets
+		end
 	end
 
 
@@ -291,10 +305,8 @@ class CZTop::Reactor
 
 		self.log.debug "Got event %p" % [ event ]
 		if event
-			sock = event.socket or
-				raise "No socket for event %p!?" % [ event ]
-			handler = self.sockets[ event.socket ][ :handler ] or
-				raise "No handler registered for %p" % [ event.socket ]
+			# self.log.debug "Got event: %p" % [ event ]
+			handler = self.sockets[ event.socket ][ :handler ]
 			handler.call( event )
 		else
 			self.log.debug "Expired: firing timers."
@@ -350,11 +362,13 @@ class CZTop::Reactor
 	### Modify the underlying poller's event mask with the events +socket+ is
 	### interested in.
 	def update_poller_for( socket )
-		event_mask = self.mask_for( socket )
+		self.synchronize do
+			event_mask = self.mask_for( socket )
 
-		ptr = self.ptr_for_socket( socket )
-		rc = CZTop::Poller::ZMQ.poller_modify( @poller_ptr, ptr, event_mask )
-		CZTop::HasFFIDelegate.raise_zmq_err if rc == -1
+			ptr = self.ptr_for_socket( socket )
+			rc = CZTop::Poller::ZMQ.poller_modify( @poller_ptr, ptr, event_mask )
+			CZTop::HasFFIDelegate.raise_zmq_err if rc == -1
+		end
 	end
 
 
