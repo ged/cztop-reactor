@@ -1,3 +1,10 @@
+## v0.5.0 [2018-07-11] Michael Granger <ged@FaerieMUD.org>
+
+Enhancements:
+
+- Added methods to pause/resume all timers.
+
+
 ## v0.4.0 [2018-06-27] Michael Granger <ged@FaerieMUD.org>
 
 Enhancements:

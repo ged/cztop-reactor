@@ -24,7 +24,7 @@ class CZTop::Reactor
 	include MonitorMixin
 
 	# The version of this library
-	VERSION = '0.4.0'
+	VERSION = '0.5.0'
 
 	# The maximum number of seconds to wait for events when there are no timers
 	# registered.

@@ -1,15 +1,15 @@
 # -*- encoding: utf-8 -*-
-# stub: cztop-reactor 0.5.0.pre20180628082709 ruby lib
+# stub: cztop-reactor 0.6.0.pre20180711100504 ruby lib
 
 Gem::Specification.new do |s|
   s.name = "cztop-reactor".freeze
-  s.version = "0.5.0.pre20180628082709"
+  s.version = "0.6.0.pre20180711100504"
 
   s.required_rubygems_version = Gem::Requirement.new("> 1.3.1".freeze) if s.respond_to? :required_rubygems_version=
   s.require_paths = ["lib".freeze]
   s.authors = ["Michael Granger".freeze]
   s.cert_chain = ["certs/ged.pem".freeze]
-  s.date = "2018-06-28"
+  s.date = "2018-07-11"
   s.description = "This is an implementation of the Reactor pattern described in [Pattern-Oriented\nSoftware Architecture (Volume 2)][POSA2]. It allows an asynchronous application\nto be described as one or more \"reactions\" to events, in this case either I/O\nconditions on a ZMQ socket or a timer expiring.\n\nA simple example:\n\n    # Start a SERVER socket, and print out any messages sent to it\n    reactor = CZTop::Reactor.new\n    socket = CZTop::Socket::SERVER.new\n    socket.bind( 'tcp://0.0.0.0:8' )\n    reactor.register( socket, :read ) do |event|\n      if event.readable?\n        message = event.socket.receive\n        puts \"Read: %p\" % [ message.to_a ]\n      end\n    end\n    reactor.start_polling".freeze
   s.email = ["ged@FaerieMUD.org".freeze]
   s.extra_rdoc_files = ["History.md".freeze, "LICENSE.txt".freeze, "Manifest.txt".freeze, "README.md".freeze, "History.md".freeze, "README.md".freeze]
@@ -26,7 +26,7 @@ Gem::Specification.new do |s|
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
       s.add_runtime_dependency(%q<loggability>.freeze, ["~> 0.14"])
-      s.add_runtime_dependency(%q<cztop>.freeze, ["~> 0.11"])
+      s.add_runtime_dependency(%q<cztop>.freeze, ["~> 0.13"])
       s.add_runtime_dependency(%q<timers>.freeze, ["~> 4.1"])
       s.add_development_dependency(%q<hoe-mercurial>.freeze, ["~> 1.4"])
       s.add_development_dependency(%q<hoe-deveiate>.freeze, ["~> 0.9"])
@@ -37,7 +37,7 @@ Gem::Specification.new do |s|
       s.add_development_dependency(%q<hoe>.freeze, ["~> 3.16"])
     else
       s.add_dependency(%q<loggability>.freeze, ["~> 0.14"])
-      s.add_dependency(%q<cztop>.freeze, ["~> 0.11"])
+      s.add_dependency(%q<cztop>.freeze, ["~> 0.13"])
       s.add_dependency(%q<timers>.freeze, ["~> 4.1"])
       s.add_dependency(%q<hoe-mercurial>.freeze, ["~> 1.4"])
       s.add_dependency(%q<hoe-deveiate>.freeze, ["~> 0.9"])
@@ -49,7 +49,7 @@ Gem::Specification.new do |s|
     end
   else
     s.add_dependency(%q<loggability>.freeze, ["~> 0.14"])
-    s.add_dependency(%q<cztop>.freeze, ["~> 0.11"])
+    s.add_dependency(%q<cztop>.freeze, ["~> 0.13"])
     s.add_dependency(%q<timers>.freeze, ["~> 4.1"])
     s.add_dependency(%q<hoe-mercurial>.freeze, ["~> 1.4"])
     s.add_dependency(%q<hoe-deveiate>.freeze, ["~> 0.9"])

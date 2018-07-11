@@ -31,7 +31,7 @@ hoespec = Hoe.spec 'cztop-reactor' do |spec|
 	spec.developer 'Michael Granger', 'ged@FaerieMUD.org'
 
 	spec.dependency 'loggability', '~> 0.14'
-	spec.dependency 'cztop', '~> 0.11'
+	spec.dependency 'cztop', '~> 0.13'
 	spec.dependency 'timers', '~> 4.1'
 
 	spec.dependency 'hoe-deveiate',            '~> 0.9', :developer
