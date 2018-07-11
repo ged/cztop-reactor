@@ -251,6 +251,28 @@ class CZTop::Reactor
 	end
 
 
+	### Pause all timers registered with the reactor.
+	def pause_timers
+		self.timers.pause
+	end
+
+
+	### Resume all timers registered with the reactor.
+	def resume_timers
+		self.timers.resume
+	end
+
+
+	### Execute a +block+ with all registered timers paused, then resume them when
+	### the block returns.
+	def with_timers_paused
+		self.pause_timers
+		return yield
+	ensure
+		self.resume_timers
+	end
+
+
 	#
 	# Monitors
 	#

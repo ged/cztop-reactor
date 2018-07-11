@@ -212,6 +212,63 @@ describe CZTop::Reactor do
 			expect( reactor.timers ).to include( handle )
 		end
 
+
+		it "allows all timers to be paused" do
+			timer1 = reactor.add_periodic_timer( 5 ) {}
+			timer2 = reactor.add_periodic_timer( 15 ) {}
+			timer3 = reactor.add_periodic_timer( 115 ) {}
+			timers = [ timer1, timer2, timer3 ]
+
+			reactor.pause_timers
+
+			expect( timers ).to all( be_paused )
+		end
+
+
+		it "allows all timers to be resumed" do
+			timer1 = reactor.add_periodic_timer( 5 ) {}
+			timer2 = reactor.add_periodic_timer( 15 ) {}
+			timer3 = reactor.add_periodic_timer( 115 ) {}
+			timers = [ timer1, timer2, timer3 ]
+
+			reactor.pause_timers
+			reactor.resume_timers
+
+			expect( timers.none?(&:paused?) ).to be_truthy
+		end
+
+
+		it "allows a block to be run while timers are paused" do
+			timer1 = reactor.add_periodic_timer( 5 ) {}
+			timer2 = reactor.add_periodic_timer( 15 ) {}
+			timer3 = reactor.add_periodic_timer( 115 ) {}
+			timers = [ timer1, timer2, timer3 ]
+
+			result = reactor.with_timers_paused do
+				expect( timers ).to all( be_paused )
+				:the_blocks_result
+			end
+
+			expect( result ).to eq( :the_blocks_result )
+			expect( timers.none?(&:paused?) ).to be_truthy
+		end
+
+
+		it "resumes timers even if the paused-timer block errors" do
+			timer1 = reactor.add_periodic_timer( 5 ) {}
+			timer2 = reactor.add_periodic_timer( 15 ) {}
+			timer3 = reactor.add_periodic_timer( 115 ) {}
+			timers = [ timer1, timer2, timer3 ]
+
+			expect {
+				reactor.with_timers_paused do
+					raise "something bad"
+				end
+			}.to raise_error( 'something bad' )
+
+			expect( timers.none?(&:paused?) ).to be_truthy
+		end
+
 	end
 
 
