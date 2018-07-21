@@ -10,7 +10,9 @@ Rakefile
 lib/cztop/reactor.rb
 lib/cztop/reactor/event.rb
 lib/cztop/reactor/signal_handling.rb
+lib/cztop/reactor/socket_monitoring.rb
 spec/cztop/reactor/event_spec.rb
 spec/cztop/reactor/signal_handling_spec.rb
+spec/cztop/reactor/socket_monitoring_spec.rb
 spec/cztop/reactor_spec.rb
 spec/spec_helper.rb
