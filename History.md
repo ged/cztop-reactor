@@ -1,3 +1,10 @@
+## v0.6.0 [2018-07-21] Michael Granger <ged@FaerieMUD.org>
+
+Enhancements:
+
+- Add a mixin for easy socket monitoring setup.
+
+
 ## v0.5.0 [2018-07-11] Michael Granger <ged@FaerieMUD.org>
 
 Enhancements:
