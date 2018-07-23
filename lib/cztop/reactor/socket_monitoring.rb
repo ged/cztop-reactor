@@ -6,6 +6,14 @@ require 'cztop/reactor' unless defined?( CZTop::Reactor )
 # Methods for logging monitor events.
 module CZTop::Reactor::SocketMonitoring
 
+	### Inclusion callback -- add Loggability to including classes.
+	def self::included( mod )
+		super
+		mod.extend( Loggability )
+		mod.log_to( :cztop ) unless Loggability.log_host?( mod )
+	end
+
+
 	### Set up a monitor instance variable on object creation.
 	def initialize( * ) # :notnew:
 		@monitor = nil

@@ -16,8 +16,8 @@ describe CZTop::Reactor::SocketMonitoring do
 
 			attr_reader :monitor_events
 
-			def on_connected( fd, endpoint )
-				@monitor_events << [ :connected, fd, endpoint ]
+			def on_connect_delayed( fd, endpoint )
+				@monitor_events << :connect_delayed
 			end
 
 		end
@@ -26,15 +26,15 @@ describe CZTop::Reactor::SocketMonitoring do
 
 		obj = including_class.new
 		reactor = CZTop::Reactor.new
-		socket = CZTop::Socket::PAIR.new
+		listener = CZTop::Socket::SERVER.new( '@tcp://127.0.0.1:*' )
+		socket = CZTop::Socket::CLIENT.new
 
 		obj.with_socket_monitor( reactor, socket, :CONNECTED ) do
-			obj.log.debug( "Killing with USR1" )
-			Process.kill( :USR1, Process.pid )
+			socket.connect( listener.last_endpoint )
 			reactor.poll_once
 		end
 
-		expect( obj.signals ).to eq([ :USR1 ])
+		expect( obj.monitor_events ).to include( :connect_delayed )
 	end
 
 
