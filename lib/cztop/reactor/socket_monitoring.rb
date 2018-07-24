@@ -48,7 +48,7 @@ module CZTop::Reactor::SocketMonitoring
 
 	### Handle monitor events.
 	def on_monitor_event( monitor_event )
-		self.log.debug "Got monitor event: %p" % [ monitor_event ]
+		# self.log.debug "Got monitor event: %p" % [ monitor_event ]
 
 		msg = monitor_event.socket.receive
 		type, *payload = *msg
@@ -70,6 +70,18 @@ module CZTop::Reactor::SocketMonitoring
 	### Monitor event callback for socket connection events
 	def on_connected( fd, endpoint )
 		self.log.debug "Client socket on FD %d connected" % [ fd ]
+	end
+
+
+	### Monitor event callback for socket connection-delayed events
+	def on_connect_delayed( fd, endpoint )
+		self.log.debug "Client socket on FD %d connection delayed" % [ fd ]
+	end
+
+
+	### Monitor event callback for socket retry events
+	def on_connect_retried( fd, endpoint )
+		self.log.debug "Retrying connection for socket on FD %d" % [ fd ]
 	end
 
 
