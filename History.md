@@ -1,3 +1,10 @@
+## v0.7.0 [2018-07-23] Michael Granger <ged@FaerieMUD.org>
+
+Enhancements:
+
+- Add socket monitoring methods for delayed and retried connections
+
+
 ## v0.6.0 [2018-07-21] Michael Granger <ged@FaerieMUD.org>
 
 Enhancements:
