@@ -16,6 +16,7 @@ module CZTop::Reactor::SocketMonitoring
 
 	### Set up a monitor instance variable on object creation.
 	def initialize( * ) # :notnew:
+		super if defined?( super )
 		@monitor = nil
 	end
 
