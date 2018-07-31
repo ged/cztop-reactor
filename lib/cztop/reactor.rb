@@ -335,7 +335,8 @@ class CZTop::Reactor
 			self.timers.fire
 		end
 
-		self.log.debug "%d sockets after polling: %p" % [ self.sockets.length, self.sockets ]
+		# self.log.debug "%d sockets after polling: %s" %
+		# 	[ self.sockets.length, self.sockets_description ]
 	rescue Interrupt
 		raise unless ignore_interrupts
 		self.log.debug "Interrupted."
@@ -359,6 +360,21 @@ class CZTop::Reactor
 	### pointer is unknown.
 	def socket_for_ptr( pointer )
 		return @socket_pointers[ pointer.to_i ]
+	end
+
+
+	### Return a description of the sockets registered with the reactor.
+	def sockets_description
+		return self.sockets.map do |sock, _|
+			case sock
+			when CZTop::Socket
+				"%s {%s}" % [ sock.class.name.sub(/.*::/, ''), sock.last_endpoint || 'not connected' ]
+			when CZTop::Actor
+				"Actor %#x" % [ sock.object_id * 2 ]
+			else
+				"??? %p ???" % [ sock.class ]
+			end
+		end.join( ', ' )
 	end
 
 
